@@ -4,13 +4,12 @@ const Group = require('../models/group');
 const User = require('../models/user');
 const mongoose = require("mongoose");
 
-// GET /connect/groups - Fetch all groups
 router.get('/group/allGroups', async (req, res) => {
 
     try {
         const groups = await Group.find()
             .populate('members', 'name email image')
-            .select('-posts');  // Exclude posts for performance
+            .select('-posts');  
 
         res.json(groups);
     } catch (error) {
@@ -18,7 +17,6 @@ router.get('/group/allGroups', async (req, res) => {
     }
 });
 
-// GET /connect/groupMembers - Fetch group members
 router.get('/group/groupMembers', async (req, res) => {
     try {
         const { groupId } = req.query;
@@ -40,7 +38,6 @@ router.get('/group/groupMembers', async (req, res) => {
     }
 });
 
-// GET /connect/groupPosts - Fetch group posts
 router.get('/group/groupPosts', async (req, res) => {
     try {
         const { groupId } = req.query;
@@ -64,7 +61,6 @@ router.get('/group/groupPosts', async (req, res) => {
     }
 });
 
-// POST /connect/groups - Create a new group
 router.post('/group/createGroup', async (req, res) => {
     try {
         const { name, about, type, category, createdBy } = req.body;
@@ -74,7 +70,7 @@ router.post('/group/createGroup', async (req, res) => {
             about,
             type,
             category,
-            members: [createdBy]  // Add creator as first member
+            members: [createdBy]  
         });
 
         await group.save();
@@ -84,7 +80,6 @@ router.post('/group/createGroup', async (req, res) => {
     }
 });
 
-// POST /connect/groups/:groupId/join - Join a group
 router.post('/group/joinGroups/:groupId/join', async (req, res) => {
     try {
         const { userId } = req.body;
@@ -107,7 +102,6 @@ router.post('/group/joinGroups/:groupId/join', async (req, res) => {
     }
 });
 
-// POST /connect/groups/:groupId/leave - Leave a group
 router.post('/group/leaveGroups/:groupId/leave', async (req, res) => {
     try {
         const { userId } = req.body;
@@ -131,7 +125,6 @@ router.post('/group/leaveGroups/:groupId/leave', async (req, res) => {
     }
 });
 
-// POST /connect/groups/:groupId/posts - Create a post in a group
 router.post('/group/groupPost/:groupId/createPost', async (req, res) => {
     try {
         const { title, description, media, isVideo, createdBy, autherName, autherImage } = req.body;
@@ -171,7 +164,6 @@ router.post('/group/groupPost/:groupId/createPost', async (req, res) => {
     }
 });
 
-// POST /connect/groups/:groupId/posts/:postId/like - Like/unlike a group post
 router.post('/group/likeDislikeGroupPost/:groupId/posts/:postId/like', async (req, res) => {
     try {
         // console.log("Inside here");
@@ -210,7 +202,6 @@ router.post('/group/likeDislikeGroupPost/:groupId/posts/:postId/like', async (re
     }
 });
 
-// POST /connect/groups/:groupId/posts/:postId/comment - Comment on a group post
 router.post('/group/commentGroupPost/:groupId/posts/:postId/comment', async (req, res) => {
     try {
         const { userId, text, userName, userImage } = req.body;

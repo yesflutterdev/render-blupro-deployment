@@ -216,16 +216,10 @@ authRouter.post("/api/forgotPassword", async (req, res) => {
             return res.status(400).json({ msg: "User with this email does not exist!" });
         }
 
-        // Generate a 6-digit code
         const code = Math.floor(100000 + Math.random() * 900000).toString();
 
-        // In a real application, you would send this code via email
-        // For now, we'll just return it
-        // TODO: Implement email sending functionality
-
-        // Store the code and its expiry in the user document
         user.resetCode = code;
-        user.resetCodeExpiry = Date.now() + 3600000; // 1 hour validity
+        user.resetCodeExpiry = Date.now() + 3600000; 
         await user.save();
 
         res.json({ code });
@@ -263,12 +257,10 @@ authRouter.post("/api/resetPassword", async (req, res) => {
         if (!user) {
             return res.status(400).json({ msg: "User with this email does not exist!" });
         }
-
-        // Hash the new password
+        
         const hashedPassword = await bcryptjs.hash(newPassword, 8);
         user.password = hashedPassword;
 
-        // Clear reset code fields
         user.resetCode = undefined;
         user.resetCodeExpiry = undefined;
 
@@ -306,5 +298,28 @@ authRouter.post("/api/auth/getSingleUser", async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 });
+
+authRouter.get("/api/auth/getUserData", async (req, res) => {
+    try {
+        
+        const { userId } = req.query; 
+
+        if (!userId) {
+            return res.status(400).json({ message: "User ID is required" });
+        }
+
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json(user);
+    } catch (error) {
+        console.error("Error fetching user:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+
 
 module.exports = authRouter;

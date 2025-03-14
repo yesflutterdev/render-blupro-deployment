@@ -12,10 +12,12 @@ const updateUserRouter = require('./routes/updateUser');
 const streamRouter = require('./routes/stream');
 const learnRouter = require('./routes/learn');
 const userPoints = require('./routes/userPoints');
+const bluGems = require('./routes/bluGems');
+
 const bcrypt = require("bcrypt");
 const swaggerUi = require('swagger-ui-express');
+
 const Stream = require('./models/stream');
-const Ably = require('ably');
 
 const app = express();
 const httpServer = createServer(app);
@@ -25,8 +27,6 @@ const io = new Server(httpServer, {
     methods: ["GET", "POST"]
   }
 });
-
-const ably = new Ably.Realtime('z_UCjw.UPLdCg:ErMqJR0MTJyz5fDlDv_ANwEKihmy3p-xeS3wIr0ssec');
 
 const PORT = process.env.PORT || 4000;
 
@@ -42,6 +42,7 @@ app.use(connectRouter);
 app.use(updateUserRouter);
 app.use(learnRouter);
 app.use(streamRouter);
+app.use("/bluGems", bluGems);
 
 // app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
@@ -71,7 +72,7 @@ io.on("connection", (socket) => {
 
       const newMessage = new Message({ roomId, sender, text, mediaUrl });
       await newMessage.save();
-      console.log("------" + newMessage);
+      console.log("------" + newMessage)
 
       await Room.findByIdAndUpdate(roomId, {
         lastMessage: text,
@@ -79,20 +80,17 @@ io.on("connection", (socket) => {
       });
 
       io.to(roomId).emit("receive-message", newMessage);
-
-      // Publish message to Ably
-      const channel = ably.channels.get(roomId);
-      channel.publish("receive-message", newMessage);
     } catch (error) {
       console.error("Error handling send-message event:", error.message);
     }
   });
 
+ 
   socket.on("send-comment", async ({ streamId, userId, text, userName }, callback) => { 
     try {
       const stream = await Stream.findById(streamId);
       if (!stream) {
-        if (callback) callback({ status: "error", message: "Stream not found" });
+        if (callback) callback({ status: "error", message: "Stream not found" }); // Ensure callback exists
         return;
       }
 
@@ -102,23 +100,20 @@ io.on("connection", (socket) => {
 
       io.to(streamId).emit("receive-comment", newComment);
 
-      // Publish comment to Ably
-      const channel = ably.channels.get(streamId);
-      channel.publish("receive-comment", newComment);
-
-      if (callback) callback({ status: "ok" });
+      if (callback) callback({ status: "ok" }); // Ensure callback exists
     } catch (error) {
       console.error("Error handling send-comment event:", error.message);
-      if (callback) callback({ status: "error", message: "Server error" });
+      if (callback) callback({ status: "error", message: "Server error" }); // Ensure callback exists
     }
   });
 
   socket.on("join-room-stream-comments", async (streamId) => {
     try {
-      console.log("inside join-room-stream-comments");
+      console.log("inside join-room-stream-comments")
       const stream = await Stream.findById(streamId);
       if (stream) {
-        console.log("yes stream exist");
+        console.log("yes stream exist")
+      
         socket.emit("existing-comments", stream.comments);
       }
       socket.join(streamId); 
@@ -126,6 +121,7 @@ io.on("connection", (socket) => {
       console.error("Error handling join-room event:", error.message);
     }
   });
+
 
   socket.on("disconnect", () => {
     console.log("A user disconnected:", socket.id);

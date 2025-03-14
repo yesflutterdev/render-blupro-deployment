@@ -47,11 +47,11 @@ router.get('/feed/filterByCategory', async (req, res) => {
     console.log('Inside /feed route');
 
     try {
-        const { category } = req.query; // Get category from query params
+        const { category } = req.query; 
         let query = {};
 
         if (category && category.toLowerCase() !== "all") {
-            query.category = category; // Apply category filter only if it's not "all"
+            query.category = category; 
         }
 
         const feeds = await Feed.find(query)
@@ -123,10 +123,10 @@ router.post('/likeDislikeFeed', async (req, res) => {
 
         const likeIndex = post.likes.indexOf(id);
         if (likeIndex > -1) {
-            // User has already liked the post, so unlike it
+            
             post.likes.splice(likeIndex, 1);
         } else {
-            // User hasn't liked the post, so add like
+            
             post.likes.push(id);
         }
 

@@ -3,7 +3,6 @@ const router = express.Router();
 const Activity = require('../models/activity');
 const auth = require('../middleware/auth');
 
-// GET /activity - Fetch all activities
 router.get('/activity', async (req, res) => {
     try {
         const activities = await Activity.find()
@@ -17,7 +16,6 @@ router.get('/activity', async (req, res) => {
     }
 });
 
-// GET /activity/:id - Fetch single activity
 router.get('/activities/:id', auth, async (req, res) => {
     try {
         const activity = await Activity.findById(req.params.id)
@@ -34,7 +32,7 @@ router.get('/activities/:id', auth, async (req, res) => {
     }
 });
 
-// POST /activity/likeDislike - Like or dislike an activity
+
 router.post('/likeDislikeActivity', async (req, res) => {
     try {
         const { id, activityId } = req.body;
@@ -49,10 +47,10 @@ router.post('/likeDislikeActivity', async (req, res) => {
 
         const likeIndex = activity.likes.indexOf(id);
         if (likeIndex > -1) {
-            // User has already liked the activity, so unlike it
+            
             activity.likes.splice(likeIndex, 1);
         } else {
-            // User hasn't liked the activity, so add like
+            
             activity.likes.push(id);
         }
 
@@ -63,7 +61,6 @@ router.post('/likeDislikeActivity', async (req, res) => {
     }
 });
 
-// GET /activity/comments/:activityId - Get comments for an activity
 router.get('/comments/:activityId', auth, async (req, res) => {
     try {
         const activity = await Activity.findById(req.params.activityId)
@@ -79,7 +76,6 @@ router.get('/comments/:activityId', auth, async (req, res) => {
     }
 });
 
-// POST /activity/addComment - Add a comment to an activity
 router.post('/addCommentActivity', async (req, res) => {
     try {
         const { id, activityId, text, userName, userImage } = req.body;
