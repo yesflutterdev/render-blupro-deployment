@@ -19,6 +19,34 @@ router.get('/learn',  async (req, res) => {
     }
 });
 
+router.post('/learn/addLearn', async (req, res) => {
+    try {
+        const { title, description,tags, category, media, isVideo,userId } = req.body;
+        if (!title || !description || !category) {
+            return res.status(400).json({ message: 'Title, description, and category are required' });
+        }
+
+        const newLearn = new Learn({
+            author: userId,
+            title,
+            description,
+            category,
+            media,
+            tags,
+            isVideo
+        });
+
+        await newLearn.save();
+
+        res.json({ message: 'Learn added successfully' });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+);
+
+
 /// filter by feed category
 router.get('/learn/filterByCategory', async (req, res) => {
     
@@ -43,6 +71,18 @@ router.get('/learn/filterByCategory', async (req, res) => {
     }
 });
 
+router.get('/learn/:id', async (req, res) => {
+    try {
+        const learn = await Learn.findById(req.params.id)
+            .populate('author', 'name image')
+            .populate('likes', 'name email')
+            .populate('comments.userId', 'name email image');
+        res.json(learn);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+);
 
 router.post('/learn/likeDislikeLearn', async (req, res) => {
     try {
@@ -125,6 +165,21 @@ router.get("/learn/learnCategories", async (req, res) => {
     } catch (error) {
       res.status(500).json({ message: "Error fetching categories", error });
     }
-  });
+  }); 
+
+ router.delete('/learn/deleteLearn/:id', async (req, res) => {
+    try {
+        const learn = await Learn.findById(req.params.id);
+        if (!learn) {
+            return res.status(404).json({ message: 'Learn not found' });
+        }
+
+        await learn.remove();
+        res.json({ message: 'Learn deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+); 
 
 module.exports = router; 

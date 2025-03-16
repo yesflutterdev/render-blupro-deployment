@@ -42,6 +42,48 @@ router.get('/feed',  async (req, res) => {
     }
 });
 
+router.post('/feed/addFeed', async (req, res) => {
+    try {
+        const { title, description,tags, category, media, isVideo,userId } = req.body;
+        if (!title || !description || !category) {
+            return res.status(400).json({ message: 'Title, description, and category are required' });
+        }
+
+        const newFeed = new Feed({
+            author: userId,
+            title,
+            description,
+            category,
+            media,
+            tags,
+            isVideo
+        });
+
+        await newFeed.save();
+
+        res.json({ message: 'Feed added successfully' });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+);
+
+router.delete('/feed/deleteFeed/:id', async (req, res) => {
+    try {
+        const feed = await Feed.findById(req.params.id);
+        if (!feed) {
+            return res.status(404).json({ message: 'feed not found' });
+        }
+
+        await feed.remove();
+        res.json({ message: 'feed deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+); 
+
 /// filter by feed category
 router.get('/feed/filterByCategory', async (req, res) => {
     console.log('Inside /feed route');
@@ -66,6 +108,18 @@ router.get('/feed/filterByCategory', async (req, res) => {
     }
 });
 
+router.get('/feed/:id', async (req, res) => {
+    try {
+        const feed = await Feed.findById(req.params.id)
+            .populate('author', 'name image')
+            .populate('likes', 'name email')
+            .populate('comments.userId', 'name email image');
+        res.json(feed);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+);
 
 
 /**

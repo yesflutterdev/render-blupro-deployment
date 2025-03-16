@@ -32,7 +32,6 @@ router.get('/activities/:id', auth, async (req, res) => {
     }
 });
 
-
 router.post('/likeDislikeActivity', async (req, res) => {
     try {
         const { id, activityId } = req.body;
