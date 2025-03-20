@@ -322,13 +322,18 @@ router.post('/addComment', async (req, res) => {
     }
 });
 
-router.get("/feed/feedCategories", async (req, res) => {
+router.get("/feed/category/feedCategories", async (req, res) => {
     try {
+      console.log("Fetching categories..."); // Debugging log
       const categories = await FeedCategory.find().sort({ createdAt: -1 });
+
+      console.log("Categories fetched:", categories); // Debugging log
       res.status(200).json(categories);
     } catch (error) {
+      console.error("Error fetching categories:", error);
       res.status(500).json({ message: "Error fetching categories", error });
     }
-  });
+});
+
 
 module.exports = router; 

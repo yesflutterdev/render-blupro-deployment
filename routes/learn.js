@@ -158,7 +158,7 @@ router.post('/learn/addComment', async (req, res) => {
     }
 });
 
-router.get("/learn/learnCategories", async (req, res) => {
+router.get("/learn/category/learnCategories", async (req, res) => {
     try {
       const categories = await LearnCategory.find().sort({ createdAt: -1 });
       res.status(200).json(categories);
