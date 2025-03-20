@@ -10,6 +10,10 @@ const activitySchema = new mongoose.Schema({
         ref: 'User',
         required: true,
     },
+    usersToShow: { 
+        type: [String], 
+        default: [] 
+    },
     description: {
         type: String,
         required: true,

@@ -85,6 +85,51 @@ io.on("connection", (socket) => {
     }
   });
 
+socket.on("broadcast-message", async ({ sender, text, mediaUrl, userIds }) => {
+  try {
+    const Message = require("./models/Message");
+    const Room = require("./models/Room");
+
+    const adminId = sender; // Admin is the sender
+
+    const messages = await Promise.all(
+      userIds.map(async (userId) => {
+        // Find the existing room between admin and user
+        let room = await Room.findOne({ 
+          participants: { $all: [adminId, userId] } 
+        });
+
+        // If no room exists, create a new one
+        if (!room) {
+          room = new Room({ participants: [adminId, userId] });
+          await room.save();
+        }
+
+        // Create a new message in that room
+        const newMessage = new Message({
+          roomId: room._id, // Use the found/created room ID
+          sender,
+          text,
+          mediaUrl,
+        });
+
+        await newMessage.save();
+
+        // Emit the message to the correct room
+        io.to(room._id.toString()).emit("receive-message", newMessage);
+
+        return newMessage;
+      })
+    );
+
+    console.log(`Broadcast sent to users: ${userIds.join(", ")}`);
+
+  } catch (error) {
+    console.error("Error handling broadcast-message event:", error.message);
+  }
+});
+
+
  
   socket.on("send-comment", async ({ streamId, userId, text, userName }, callback) => { 
     try {

@@ -5,12 +5,27 @@ const auth = require('../middleware/auth');
 
 router.get('/activity', async (req, res) => {
     try {
-        const activities = await Activity.find()
+        const { userID, isAdmin } = req.query; 
+
+        let query = {}; 
+
+        if (isAdmin !== 'true') { 
+            query = {
+                $or: [
+                    { usersToShow: { $exists: false } }, 
+                    { usersToShow: { $size: 0 } }, 
+                    { usersToShow: { $in: [userID] } } 
+                ]
+            };
+        }
+
+        const activities = await Activity.find(query)
             .sort({ startTime: 1 })
             .populate('author', 'name image')
             .populate('likes', 'name email')
             .populate('comments.userId', 'name email image');
-        res.json(activities);
+
+        res.status(200).json(activities);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -44,18 +59,18 @@ router.post('/likeDislikeActivity', async (req, res) => {
             return res.status(404).json({ message: 'Activity not found' });
         }
 
-        const likeIndex = activity.likes.indexOf(id);
-        if (likeIndex > -1) {
-            
-            activity.likes.splice(likeIndex, 1);
+        let updatedLikes;
+        if (activity.likes.includes(id)) {
+            updatedLikes = activity.likes.filter(userId => userId !== id);
         } else {
-            
-            activity.likes.push(id);
+            updatedLikes = [...activity.likes, id]; 
         }
 
-        await activity.save();
+        await Activity.findByIdAndUpdate(activityId, { likes: updatedLikes }, { new: true, runValidators: false });
+
         res.json({ isSuccess: true });
     } catch (error) {
+        console.log(error.message);
         res.status(500).json({ message: error.message });
     }
 });
@@ -78,6 +93,7 @@ router.get('/comments/:activityId', auth, async (req, res) => {
 router.post('/addCommentActivity', async (req, res) => {
     try {
         const { id, activityId, text, userName, userImage } = req.body;
+
         if (!id || !activityId || !text || !userName) {
             return res.status(400).json({ message: 'Required fields missing' });
         }
@@ -87,15 +103,26 @@ router.post('/addCommentActivity', async (req, res) => {
             return res.status(404).json({ message: 'Activity not found' });
         }
 
-        activity.comments.push({
+        if (!activity.comments) {
+            activity.comments = [];
+        }
+
+        const newComment = {
             userId: id,
             text,
             userName,
-            userImage
-        });
+            userImage,
+            createdAt: new Date() 
+        };
 
-        await activity.save();
+        await Activity.findByIdAndUpdate(
+            activityId,
+            { $push: { comments: newComment } },
+            { new: true, runValidators: false }
+        );
+
         res.json({ message: 'Comment added successfully' });
+
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

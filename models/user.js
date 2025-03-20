@@ -33,8 +33,14 @@ const userSchema = mongoose.Schema({
     dailyLikes: { type: Number, default: 0 },
     dailyComments: { type: Number, default: 0 },
     hasWatchedVideoToday: { type: Boolean, default: false },
-    lastChatDate: { type: String, default: null }
-});
+    lastChatDate: { type: String, default: null },
+    isAdmin:{
+        type: Boolean,
+        default: false
+    }
+},
+    { timestamps: true }
+);
 
 const User = mongoose.model("User", userSchema);
 
