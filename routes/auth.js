@@ -322,4 +322,32 @@ authRouter.get("/api/auth/getUserData", async (req, res) => {
 });
 
 
+/// following route is for saving user data coming from client login API
+
+authRouter.post("/api/auth/save-data", async (req, res) => {
+    console.log("1");
+    try {
+        const { bluID, authToken } = req.body;
+
+        if (!bluID) {
+            return res.status(401).json({ message: "BluId is required" });
+        }
+        console.log("2");
+        const user = await User.findOne({ bluId: bluID });
+
+        if (user) {
+            console.log("3");
+            user.authToken = authToken;
+            await user.save(); 
+            return res.status(200).json(user);
+        }
+        console.log("4");
+        const newUser = await new User({ authToken, bluId: bluID }).save();
+        return res.status(200).json(newUser);
+
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 module.exports = authRouter;

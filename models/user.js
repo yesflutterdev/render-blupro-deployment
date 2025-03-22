@@ -2,28 +2,29 @@ const mongoose = require("mongoose");
 
 const userSchema = mongoose.Schema({
     name: {
-        required: true,
+        required: false,
         type: String,
         trim: true,
     },
     email: {
-        required: true,
+        required: false,
         type: String,
         trim: true,
-        validate: {
-            validator: (value) => {
-                const re = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
-                return value.match(re)
-            },
-            message: "Please enter a valid email address",
-        },
+        // validate: {
+        //     validator: (value) => {
+        //         const re = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+        //         return value.match(re)
+        //     },
+        //     message: "Please enter a valid email address",
+        // },
     },
     password: {
-        required: true,
+        required: false,
         type: String,
     },
     imageUrl: {
         type: String,
+        default: "",
     },
     // bluGems
     totalGems: { type: Number, default: 0 },
@@ -37,6 +38,12 @@ const userSchema = mongoose.Schema({
     isAdmin:{
         type: Boolean,
         default: false
+    },
+    authToken:{
+        type: String
+    },
+    bluId:{
+        type: String
     }
 },
     { timestamps: true }
