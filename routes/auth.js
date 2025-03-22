@@ -333,7 +333,7 @@ authRouter.post("/api/auth/save-data", async (req, res) => {
             return res.status(401).json({ message: "BluId is required" });
         }
         console.log("2");
-        const user = await User.findOne({ bluId: bluID });
+        const user = await User.findOne({ bluId: String(bluID) });
 
         if (user) {
             console.log("3");
@@ -342,7 +342,7 @@ authRouter.post("/api/auth/save-data", async (req, res) => {
             return res.status(200).json(user);
         }
         console.log("4");
-        const newUser = await new User({ authToken, bluId: bluID }).save();
+        const newUser = await new User({ authToken, bluId: bluID, email:"" }).save();
         return res.status(200).json(newUser);
 
     } catch (e) {

@@ -2,15 +2,12 @@ const express = require('express');
 const router = express.Router();
 const Stream = require('../models/stream');
 
-router.get('/stream/fetchStreams',  async (req, res) => {
-  
+router.get('/stream/fetchStreams', async (req, res) => {
     try {
-        const streams = await Stream.find()
-            .sort({ createdAt: -1 })
-            .populate('userId', 'name image');
-            // TODO: when inclute like and comments
-            // .populate('likes', 'name email')
-            // .populate('comments.userId', 'name email image');
+        const streams = await Stream.find({ isLive: true }) 
+            .sort({ createdAt: -1 }) 
+            .populate('userId', 'name image'); 
+
         res.json(streams);
     } catch (error) {
         res.status(500).json({ message: error.message });

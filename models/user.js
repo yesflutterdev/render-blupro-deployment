@@ -6,9 +6,10 @@ const userSchema = mongoose.Schema({
         type: String,
         trim: true,
     },
-    email: {
+    email: { // we don't need email, for now onward we are going to use bluId
         required: false,
         type: String,
+        unique: false,
         trim: true,
         // validate: {
         //     validator: (value) => {
@@ -43,7 +44,7 @@ const userSchema = mongoose.Schema({
         type: String
     },
     bluId:{
-        type: String
+        type: String, required: true, unique: true,
     }
 },
     { timestamps: true }
