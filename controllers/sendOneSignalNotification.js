@@ -8,7 +8,7 @@ const sendOneSignalNotification = async ({ playerId, message, senderName }) => {
             {
                 app_id: "f4f1a863-69f0-4f6c-b839-c7e597b5ac09",
                 include_player_ids: [playerId],
-                headings: { en: `New message from ${senderName}` },
+                headings: { en: `New message` },
                 contents: { en: message },
             },
             {

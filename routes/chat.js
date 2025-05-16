@@ -2,6 +2,9 @@ const express = require("express");
 const Room = require("../models/Room");
 const Message = require("../models/Message");
 const router = express.Router();
+const User = require("../models/user");
+const sendOneSignalNotification = require("../controllers/sendOneSignalNotification");
+
 
 /**
  * @swagger
@@ -184,18 +187,27 @@ router.post("/chat/message", async (req, res) => {
 });
 
 router.post("/test/notification", async (req, res) => {
-  roomId = "";
+  const roomId = "67e2e3ebd094fb786335b372";
+  const sender = "bluProTeamId4fa3b926e43a"
   const room = await Room.findById(roomId);
-  const recipientId = room.members.find((id) => id.toString() !== sender);
-
+  const recipientId = room.participants.find((id) => id.toString() !== sender);
+  console.log(recipientId);
   const recipientUser = await User.findById(recipientId);
-  if (recipientUser?.playerId) {
+  const text = "hii";
+
+  if (recipientUser?.notificationKey) {
     await sendOneSignalNotification({
-      playerId: recipientUser.playerId,
+      playerId: recipientUser.notificationKey,
       message: text || "You have a new message!",
-      senderName: "New Message",
+      senderName: "",
+    });
+    res.status(200).json({
+      "1": "ok"
     });
   }
+  res.status(200).json({
+    "2": "not ok"
+  });
 });
 
 module.exports = router;

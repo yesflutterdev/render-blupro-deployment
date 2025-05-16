@@ -219,7 +219,7 @@ authRouter.post("/api/forgotPassword", async (req, res) => {
         const code = Math.floor(100000 + Math.random() * 900000).toString();
 
         user.resetCode = code;
-        user.resetCodeExpiry = Date.now() + 3600000; 
+        user.resetCodeExpiry = Date.now() + 3600000;
         await user.save();
 
         res.json({ code });
@@ -257,7 +257,7 @@ authRouter.post("/api/resetPassword", async (req, res) => {
         if (!user) {
             return res.status(400).json({ msg: "User with this email does not exist!" });
         }
-        
+
         const hashedPassword = await bcryptjs.hash(newPassword, 8);
         user.password = hashedPassword;
 
@@ -301,8 +301,8 @@ authRouter.post("/api/auth/getSingleUser", async (req, res) => {
 
 authRouter.get("/api/auth/getUserData", async (req, res) => {
     try {
-        
-        const { userId } = req.query; 
+
+        const { userId } = req.query;
 
         if (!userId) {
             return res.status(400).json({ message: "User ID is required" });
@@ -325,7 +325,6 @@ authRouter.get("/api/auth/getUserData", async (req, res) => {
 /// following route is for saving user data coming from client login API
 
 authRouter.post("/api/auth/save-data", async (req, res) => {
-    console.log("1");
     try {
         const { bluID, authToken } = req.body;
 
@@ -338,11 +337,11 @@ authRouter.post("/api/auth/save-data", async (req, res) => {
         if (user) {
             console.log("3");
             user.authToken = authToken;
-            await user.save(); 
+            await user.save();
             return res.status(200).json(user);
         }
         console.log("4");
-        const newUser = await new User({ authToken, bluId: bluID, email:"" }).save();
+        const newUser = await new User({ authToken, bluId: bluID, email: "" }).save();
         return res.status(200).json(newUser);
 
     } catch (e) {

@@ -15,7 +15,7 @@ const userPoints = require('./routes/userPoints');
 const bluGems = require('./routes/bluGems');
 const appContentRoutes = require('./routes/appContent');
 const sendOneSignalNotification = require("./controllers/sendOneSignalNotification");
-
+const User = require("./models/user");
 
 
 const bcrypt = require("bcrypt");
@@ -86,17 +86,20 @@ io.on("connection", (socket) => {
 
       io.to(roomId).emit("receive-message", newMessage);
 
+      ///
       const room = await Room.findById(roomId);
-      const recipientId = room.members.find((id) => id.toString() !== sender);
-
+      const recipientId = room.participants.find((id) => id.toString() !== sender);
       const recipientUser = await User.findById(recipientId);
-      if (recipientUser?.playerId) {
+
+
+      if (recipientUser?.notificationKey) {
         await sendOneSignalNotification({
-          playerId: recipientUser.playerId,
+          playerId: recipientUser.notificationKey,
           message: text || "You have a new message!",
-          senderName: "New Message",
+          senderName: "",
         });
       }
+      ///
     } catch (error) {
       console.error("Error handling send-message event:", error.message);
     }
