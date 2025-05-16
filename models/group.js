@@ -13,6 +13,9 @@ const postSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    tags: {
+        type: [String],
+    },
     autherImage: {
         type: String,
     },
@@ -28,12 +31,12 @@ const postSchema = new mongoose.Schema({
     },
     likes: [{
         type: mongoose.Schema.Types.ObjectId,
-       
+
     }],
     comments: [{
         userId: {
             type: mongoose.Schema.Types.ObjectId,
-           
+
             required: true
         },
         text: {
@@ -55,6 +58,9 @@ const postSchema = new mongoose.Schema({
         default: Date.now
     }
 });
+
+const GroupPost = mongoose.model('GroupPost', postSchema);
+
 
 
 const groupSchema = new mongoose.Schema({
@@ -81,18 +87,27 @@ const groupSchema = new mongoose.Schema({
     members: [{
         type: mongoose.Schema.Types.ObjectId,
     }],
-    posts: [postSchema], 
+    posts: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'GroupPost'
+    }],
     createdAt: {
         type: Date,
         default: Date.now
-    }
+    },
+    pendingApprovals: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }]
 });
 
-groupSchema.virtual('membersCount').get(function() {
+groupSchema.virtual('membersCount').get(function () {
     return this.members.length;
 });
 
 groupSchema.set('toJSON', { virtuals: true });
 groupSchema.set('toObject', { virtuals: true });
 
-module.exports = mongoose.model('Group', groupSchema);
+const Group = mongoose.model('Group', groupSchema);
+
+module.exports = { Group, GroupPost };

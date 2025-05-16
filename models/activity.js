@@ -5,20 +5,23 @@ const activitySchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    author:{
+    author: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
     },
-    usersToShow: { 
-        type: [String], 
-        default: [] 
+    usersToShow: {
+        type: [String],
+        default: []
     },
     description: {
         type: String,
         required: true,
     },
     media: {
+        type: String,
+    },
+    category: {
         type: String,
     },
     isVideo: {

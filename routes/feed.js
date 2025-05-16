@@ -28,7 +28,7 @@ const auth = require('../middleware/auth');
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/feed',  async (req, res) => {
+router.get('/feed', async (req, res) => {
     console.log('Inside /feed route');
     try {
         const feeds = await Feed.find()
@@ -44,7 +44,7 @@ router.get('/feed',  async (req, res) => {
 
 router.post('/feed/addFeed', async (req, res) => {
     try {
-        const { title, description,tags, category, media, isVideo,userId } = req.body;
+        const { title, description, tags, category, media, isVideo, userId } = req.body;
         if (!title || !description || !category) {
             return res.status(400).json({ message: 'Title, description, and category are required' });
         }
@@ -82,18 +82,18 @@ router.delete('/feed/deleteFeed/:id', async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
-); 
+);
 
 /// filter by feed category
 router.get('/feed/filterByCategory', async (req, res) => {
     console.log('Inside /feed route');
 
     try {
-        const { category } = req.query; 
+        const { category } = req.query;
         let query = {};
 
         if (category && category.toLowerCase() !== "all") {
-            query.category = category; 
+            query.category = category;
         }
 
         const feeds = await Feed.find(query)
@@ -177,10 +177,10 @@ router.post('/likeDislikeFeed', async (req, res) => {
 
         const likeIndex = post.likes.indexOf(id);
         if (likeIndex > -1) {
-            
+
             post.likes.splice(likeIndex, 1);
         } else {
-            
+
             post.likes.push(id);
         }
 
@@ -240,7 +240,7 @@ router.get('/comments', async (req, res) => {
 
         const post = await Feed.findById(postId)
             .populate('comments.userId', 'name email image');
-        
+
         if (!post) {
             return res.status(404).json({ message: 'Post not found' });
         }
@@ -324,14 +324,14 @@ router.post('/addComment', async (req, res) => {
 
 router.get("/feed/category/feedCategories", async (req, res) => {
     try {
-      console.log("Fetching categories..."); // Debugging log
-      const categories = await FeedCategory.find().sort({ createdAt: -1 });
+        console.log("Fetching categories..."); // Debugging log
+        const categories = await FeedCategory.find().sort({ createdAt: -1 });
 
-      console.log("Categories fetched:", categories); // Debugging log
-      res.status(200).json(categories);
+        console.log("Categories fetched:", categories); // Debugging log
+        res.status(200).json(categories);
     } catch (error) {
-      console.error("Error fetching categories:", error);
-      res.status(500).json({ message: "Error fetching categories", error });
+        console.error("Error fetching categories:", error);
+        res.status(500).json({ message: "Error fetching categories", error });
     }
 });
 

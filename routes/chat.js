@@ -127,7 +127,7 @@ router.post("/chat/room", async (req, res) => {
   const { user1, user2 } = req.body;
 
   try {
-    
+
     let room = await Room.findOne({ participants: { $all: [user1, user2] } });
     if (!room) {
       room = new Room({ participants: [user1, user2] });
@@ -143,7 +143,7 @@ router.get("/chat/messages/:roomId", async (req, res) => {
   const { roomId } = req.params;
 
   try {
-    const messages = await Message.find({ roomId }).sort({ createdAt: 1 }); 
+    const messages = await Message.find({ roomId }).sort({ createdAt: 1 });
     res.status(200).json(messages);
   } catch (err) {
     res.status(500).json({ error: "Internal Server Error", message: err.message });
@@ -183,5 +183,19 @@ router.post("/chat/message", async (req, res) => {
   }
 });
 
+router.post("/test/notification", async (req, res) => {
+  roomId = "";
+  const room = await Room.findById(roomId);
+  const recipientId = room.members.find((id) => id.toString() !== sender);
+
+  const recipientUser = await User.findById(recipientId);
+  if (recipientUser?.playerId) {
+    await sendOneSignalNotification({
+      playerId: recipientUser.playerId,
+      message: text || "You have a new message!",
+      senderName: "New Message",
+    });
+  }
+});
 
 module.exports = router;

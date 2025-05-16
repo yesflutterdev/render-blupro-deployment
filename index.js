@@ -13,6 +13,10 @@ const streamRouter = require('./routes/stream');
 const learnRouter = require('./routes/learn');
 const userPoints = require('./routes/userPoints');
 const bluGems = require('./routes/bluGems');
+const appContentRoutes = require('./routes/appContent');
+const sendOneSignalNotification = require("./controllers/sendOneSignalNotification");
+
+
 
 const bcrypt = require("bcrypt");
 const swaggerUi = require('swagger-ui-express');
@@ -23,7 +27,7 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: "*", 
+    origin: "*",
     methods: ["GET", "POST"]
   }
 });
@@ -43,6 +47,7 @@ app.use(updateUserRouter);
 app.use(learnRouter);
 app.use(streamRouter);
 app.use("/bluGems", bluGems);
+app.use('/appContant', appContentRoutes);
 
 // app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
@@ -80,58 +85,70 @@ io.on("connection", (socket) => {
       });
 
       io.to(roomId).emit("receive-message", newMessage);
+
+      const room = await Room.findById(roomId);
+      const recipientId = room.members.find((id) => id.toString() !== sender);
+
+      const recipientUser = await User.findById(recipientId);
+      if (recipientUser?.playerId) {
+        await sendOneSignalNotification({
+          playerId: recipientUser.playerId,
+          message: text || "You have a new message!",
+          senderName: "New Message",
+        });
+      }
     } catch (error) {
       console.error("Error handling send-message event:", error.message);
     }
   });
 
-socket.on("broadcast-message", async ({ sender, text, mediaUrl, userIds }) => {
-  try {
-    const Message = require("./models/Message");
-    const Room = require("./models/Room");
+  socket.on("broadcast-message", async ({ sender, text, mediaUrl, userIds }) => {
+    try {
+      const Message = require("./models/Message");
+      const Room = require("./models/Room");
 
-    const adminId = sender; // Admin is the sender
+      const adminId = sender; // Admin is the sender
 
-    const messages = await Promise.all(
-      userIds.map(async (userId) => {
-        // Find the existing room between admin and user
-        let room = await Room.findOne({ 
-          participants: { $all: [adminId, userId] } 
-        });
+      const messages = await Promise.all(
+        userIds.map(async (userId) => {
+          // Find the existing room between admin and user
+          let room = await Room.findOne({
+            participants: { $all: [adminId, userId] }
+          });
 
-        // If no room exists, create a new one
-        if (!room) {
-          room = new Room({ participants: [adminId, userId] });
-          await room.save();
-        }
+          // If no room exists, create a new one
+          if (!room) {
+            room = new Room({ participants: [adminId, userId] });
+            await room.save();
+          }
 
-        // Create a new message in that room
-        const newMessage = new Message({
-          roomId: room._id, // Use the found/created room ID
-          sender,
-          text,
-          mediaUrl,
-        });
+          // Create a new message in that room
+          const newMessage = new Message({
+            roomId: room._id, // Use the found/created room ID
+            sender,
+            text,
+            mediaUrl,
+          });
 
-        await newMessage.save();
+          await newMessage.save();
 
-        // Emit the message to the correct room
-        io.to(room._id.toString()).emit("receive-message", newMessage);
+          // Emit the message to the correct room
+          io.to(room._id.toString()).emit("receive-message", newMessage);
 
-        return newMessage;
-      })
-    );
+          return newMessage;
+        })
+      );
 
-    console.log(`Broadcast sent to users: ${userIds.join(", ")}`);
+      console.log(`Broadcast sent to users: ${userIds.join(", ")}`);
 
-  } catch (error) {
-    console.error("Error handling broadcast-message event:", error.message);
-  }
-});
+    } catch (error) {
+      console.error("Error handling broadcast-message event:", error.message);
+    }
+  });
 
 
- 
-  socket.on("send-comment", async ({ streamId, userId, text, userName }, callback) => { 
+
+  socket.on("send-comment", async ({ streamId, userId, text, userName }, callback) => {
     try {
       const stream = await Stream.findById(streamId);
       if (!stream) {
@@ -158,10 +175,10 @@ socket.on("broadcast-message", async ({ sender, text, mediaUrl, userIds }) => {
       const stream = await Stream.findById(streamId);
       if (stream) {
         console.log("yes stream exist")
-      
+
         socket.emit("existing-comments", stream.comments);
       }
-      socket.join(streamId); 
+      socket.join(streamId);
     } catch (error) {
       console.error("Error handling join-room event:", error.message);
     }

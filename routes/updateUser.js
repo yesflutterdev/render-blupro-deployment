@@ -20,9 +20,9 @@ router.put("/user/update", async (req, res) => {
 
         const updatedUser = await User.findByIdAndUpdate(
             userId,
-            { 
-                name: name || existingUser.name, 
-                email: email || existingUser.email 
+            {
+                name: name || existingUser.name,
+                email: email || existingUser.email
             },
             { new: true }
         );
@@ -103,5 +103,33 @@ router.put("/user/update-password", async (req, res) => {
         res.status(500).json({ message: "Server Error", error: error.message });
     }
 });
+
+// PUT /update-notification-key/:userId
+router.put('/user/update-notification-key/:userId', async (req, res) => {
+    console.log("--> inside update-notification-key")
+    const { userId } = req.params;
+    const { notificationKey } = req.body;
+
+    if (!notificationKey) {
+        return res.status(400).json({ error: 'Notification key is required' });
+    }
+
+    try {
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { notificationKey },
+            { new: true }
+        );
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json({ message: 'Notification key updated successfully', user });
+    } catch (error) {
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 
 module.exports = router;

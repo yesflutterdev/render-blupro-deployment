@@ -6,6 +6,10 @@ const userSchema = mongoose.Schema({
         type: String,
         trim: true,
     },
+    notificationKey: {
+        type: String,
+        trim: true,
+    },
     email: { // we don't need email, for now onward we are going to use bluId
         required: false,
         type: String,
@@ -36,16 +40,46 @@ const userSchema = mongoose.Schema({
     dailyComments: { type: Number, default: 0 },
     hasWatchedVideoToday: { type: Boolean, default: false },
     lastChatDate: { type: String, default: null },
-    isAdmin:{
+    isAdmin: {
         type: Boolean,
         default: false
     },
-    authToken:{
+    authToken: {
         type: String
     },
-    bluId:{
+    bluId: {
         type: String, required: true, unique: true,
     }
+    ,
+    ///
+    userPostedGroupPostIds: [
+        {
+            groupId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Group',
+                required: true
+            },
+            groupName: {
+                type: String,
+                required: true
+            },
+            postId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'GroupPost',
+                required: true
+            },
+            groupType: {
+                type: String,
+                enum: ['public', 'private'],
+                required: true
+            },
+            createdAt: {
+                type: Date,
+                default: Date.now
+            }
+        }
+    ]
+
 },
     { timestamps: true }
 );
